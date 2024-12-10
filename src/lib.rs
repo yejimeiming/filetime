@@ -2,9 +2,11 @@
 
 use std::{
   fs::{self, File, FileTimes},
-  os::macos::fs::FileTimesExt,
   time::{Duration, SystemTime, SystemTimeError, UNIX_EPOCH},
 };
+
+#[cfg(target_os = "macos")]
+use std::os::macos::fs::FileTimesExt;
 
 #[macro_use]
 extern crate napi_derive;
@@ -42,13 +44,16 @@ pub fn set_file_times(options: SetFileTimesOptions) -> SetFileTimesResult {
       let mut results = Vec::new();
 
       if let Some(btime) = btime {
-        let (created_secs, created_nanos) = js_timestamp_to_rs_timestamp(&btime);
-        let times = FileTimes::new().set_created(create_system_time_from_timestamp(
-          &created_secs,
-          &created_nanos,
-        ));
+        #[cfg(target_os = "macos")]
+        {
+          let (created_secs, created_nanos) = js_timestamp_to_rs_timestamp(&btime);
+          let times = FileTimes::new().set_created(create_system_time_from_timestamp(
+            &created_secs,
+            &created_nanos,
+          ));
 
-        results.push(file.set_times(times));
+          results.push(file.set_times(times));
+        }
       }
 
       if let Some(mtime) = mtime {

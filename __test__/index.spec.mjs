@@ -46,7 +46,9 @@ test('set file times', (t) => {
 
   t.is(res1.error, undefined)
   t.is(res2.error, undefined)
-  t.is(String(hour1ago).slice(0, 10), String(fs.statSync(destpath).birthtimeMs).slice(0, 10))
+  if (process.platform === 'darwin') {
+    t.is(String(hour1ago).slice(0, 10), String(fs.statSync(destpath).birthtimeMs).slice(0, 10))
+  }
   t.is(String(hour1ago).slice(0, 10), String(fs.statSync(destpath).mtimeMs).slice(0, 10))
   t.is(String(hour2ago).slice(0, 10), String(fs.statSync(destpath).atimeMs).slice(0, 10))
 })
